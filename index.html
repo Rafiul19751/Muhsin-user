@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+  <title>Easy Earning Bot</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #2ed914;
+      --primary-hover: #3bff21;
+      --secondary-color: #2a2a2e;
+      --background-color: #1c1c1f;
+      --text-color: #f0f0f0;
+      --text-muted-color: #a0a0a0;
+      --accent-color: #ff8c00;
+      --card-bg: #252528;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0; padding: 0; background-color: var(--background-color); color: var(--text-color);
+      font-family: 'Segoe UI', 'Roboto', sans-serif; line-height: 1.6; overflow-x: hidden;
+    }
+    .container { max-width: 400px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
+    .header {
+      background: linear-gradient(135deg, var(--primary-color), #00a651); padding: 20px; text-align: center;
+      color: #000; position: relative; overflow: hidden;
+    }
+    .header::before {
+      content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+      animation: shimmer 3s ease-in-out infinite;
+    }
+    @keyframes shimmer { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(180deg); } }
+    .profile-section { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; }
+    .profile-pic {
+      width: 60px; height: 60px; border-radius: 50%; background: rgba(0,0,0,0.2);
+      display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold;
+      border: 3px solid rgba(255,255,255,0.3);
+    }
+    .profile-pic img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+    .user-info h2 { margin: 0; font-size: 1.4em; }
+    .user-info p { margin: 5px 0 0; opacity: 0.8; font-size: 0.9em; }
+    .balance-section { text-align: center; }
+    .balance { font-size: 2.2em; font-weight: bold; margin: 10px 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+    .balance-label { font-size: 0.9em; opacity: 0.8; }
+    main { flex: 1; padding: 20px; }
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+    .stat-card {
+      background: var(--card-bg); padding: 20px; border-radius: 12px; text-align: center;
+      border: 1px solid rgba(255,255,255,0.1); transition: transform 0.2s ease;
+    }
+    .stat-card:hover { transform: translateY(-2px); }
+    .stat-card h4 { margin: 0 0 10px; color: var(--primary-color); font-size: 0.9em; }
+    .stat-value { font-size: 1.5em; font-weight: bold; margin: 5px 0; }
+    .section-title { color: var(--primary-color); margin: 25px 0 15px; font-size: 1.2em; }
+    .task-card {
+      background: var(--card-bg); padding: 18px; border-radius: 12px; margin-bottom: 12px;
+      display: flex; align-items: center; gap: 15px; cursor: pointer; transition: all 0.3s ease;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .task-card:hover { background: #2a2a2e; transform: translateY(-1px); }
+    .task-icon { width: 45px; height: 45px; border-radius: 10px; background: var(--primary-color);
+      display: flex; align-items: center; justify-content: center; color: #000; font-size: 1.2em; }
+    .task-details { flex: 1; }
+    .task-details h3 { margin: 0 0 5px; font-size: 1em; }
+    .task-details p { margin: 0; font-size: 0.85em; color: var(--text-muted-color); }
+    .task-arrow { color: var(--text-muted-color); font-size: 1.1em; }
+    .task-card.ad-in-progress {
+      pointer-events: none;
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .daily-checkin-card {
+      background: linear-gradient(135deg, var(--accent-color), #ff6b35); padding: 20px; border-radius: 12px;
+      text-align: center; cursor: pointer; margin-bottom: 20px; color: #fff; transition: transform 0.2s ease;
+    }
+    .daily-checkin-card:hover { transform: scale(1.02); }
+    .daily-checkin-card h3 { margin: 0 0 5px; }
+    .daily-checkin-card p { margin: 0; opacity: 0.9; font-size: 0.9em; }
+    .view { display: none; }
+    .view.active { display: block; }
+    .footer-nav {
+      background: var(--card-bg); padding: 10px 0; display: flex; justify-content: space-around;
+      border-top: 1px solid rgba(255,255,255,0.1); position: sticky; bottom: 0;
+    }
+    .nav-button {
+      background: none; border: none; color: var(--text-muted-color); padding: 8px 12px;
+      border-radius: 8px; cursor: pointer; transition: all 0.3s ease; display: flex;
+      flex-direction: column; align-items: center; gap: 4px; font-size: 0.75em; flex-basis: 0; flex-grow: 1;
+    }
+    .nav-button.active { color: var(--primary-color); background: rgba(46, 217, 20, 0.1); }
+    .nav-button:hover { color: var(--primary-color); }
+    .nav-button .icon { font-size: 1.2em; }
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8);
+      display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0;
+      visibility: hidden; transition: all 0.3s ease;
+    }
+    .modal-overlay.active { opacity: 1; visibility: visible; }
+    .modal-content {
+      background: var(--card-bg); padding: 25px; border-radius: 15px; width: 90%; max-width: 350px;
+      border: 1px solid rgba(255,255,255,0.2); transform: scale(0.9); transition: transform 0.3s ease;
+    }
+    .modal-overlay.active .modal-content { transform: scale(1); }
+    .modal-content h3 { margin: 0 0 20px; color: var(--primary-color); text-align: center; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: 600; color: var(--text-color); }
+    .form-group input, .form-group select {
+      width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);
+      background: var(--secondary-color); color: var(--text-color); font-size: 14px;
+    }
+    .btn {
+      padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;
+      transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 0.5px; width: 100%;
+      margin-bottom: 10px;
+    }
+    .btn-primary { background: var(--primary-color); color: #000; }
+    .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn-secondary { background: var(--secondary-color); color: var(--text-color); }
+    .btn-secondary:hover { background: #3a3a3e; }
+    .history-item {
+      background: var(--card-bg); padding: 15px; border-radius: 10px; margin-bottom: 10px;
+      border-left: 4px solid var(--primary-color); border: 1px solid rgba(255,255,255,0.1);
+    }
+    .history-item h4 { margin: 0 0 5px; font-size: 0.9em; }
+    .history-item p { margin: 0; font-size: 0.8em; color: var(--text-muted-color); }
+    .leaderboard-item {
+      background: var(--card-bg); padding: 15px; border-radius: 10px; margin-bottom: 10px;
+      display: flex; align-items: center; gap: 15px; border: 1px solid rgba(255,255,255,0.1);
+    }
+    .leaderboard-rank {
+      width: 30px; height: 30px; border-radius: 50%; background: var(--primary-color);
+      display: flex; align-items: center; justify-content: center; color: #000; font-weight: bold;
+    }
+    .leaderboard-info { flex: 1; }
+    .leaderboard-info h4 { margin: 0 0 3px; font-size: 0.9em; }
+    .leaderboard-info p { margin: 0; font-size: 0.8em; color: var(--text-muted-color); }
+    .leaderboard-earnings { font-weight: bold; color: var(--primary-color); }
+    .verify-btn {
+      background: var(--accent-color); color: #fff; padding: 8px 16px; border: none;
+      border-radius: 6px; cursor: pointer; font-size: 0.8em; margin-left: 10px;
+      opacity: 1; pointer-events: auto; transition: all 0.3s ease;
+    }
+    .verify-btn:hover { background: #ff6b35; }
+    .task-card .verify-btn { margin-top: 10px; width: calc(100% - 60px); margin-left: 60px; }
+
+    .loading-indicator {
+      display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: var(--card-bg); padding: 20px; border-radius: 12px; z-index: 1000;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .loading-indicator.active { display: block; }
+    .spinner {
+      width: 40px; height: 40px; border: 4px solid rgba(46, 217, 20, 0.3);
+      border-top: 4px solid var(--primary-color); border-radius: 50%;
+      animation: spin 1s linear infinite; margin: 0 auto 10px;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    @media (max-width: 480px) {
+      .container { max-width: 100%; }
+      .header { padding: 15px; }
+      main { padding: 15px; }
+      .stats-grid { gap: 10px; }
+      .task-card { padding: 15px; flex-wrap: wrap; }
+    }
+  </style>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getDatabase, ref, set, get, push, onValue, update } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+    let app, database;
+    let tgUser = null;
+    let userData = {};
+    let appSettings = {};
+    let dailyTasks = [];
+    let adTasks = [];
+    let isAdWatching = false;
+
+    document.addEventListener('DOMContentLoaded', initApp);
+
+    async function initApp() {
+      if (window.Telegram && Telegram.WebApp) {
+        Telegram.WebApp.ready();
+        Telegram.WebApp.expand();
+        tgUser = Telegram.WebApp.initDataUnsafe.user;
+      }
+
+      await initializeFirebase();
+      await loadAppSettings();
+      await loadUserData();
+      await loadDailyTasks();
+      await loadAdTasks();
+      await loadPaymentMethods();
+      loadTelegramUser();
+      showView('home-view');
+      renderLeaderboard();
+      checkDailyCheckin();
+      updateDisplay();
+      
+      setupRealTimeListeners();
+    }
+
+    async function initializeFirebase() {
+      const firebaseConfig = {
+        apiKey: "AIzaSyCi9ch4Z7qTZu9QWv_UUgfzfQZo4fLv9UE",
+        authDomain: "mdsojib-ffa4d.firebaseapp.com",
+        projectId: "mdsojib-ffa4d",
+        storageBucket: "mdsojib-ffa4d.firebasestorage.app",
+        messagingSenderId: "421392584596",
+        appId: "1:421392584596:web:ead2d30722009ba0c80981",
+        measurementId: "G-6KM7ZLYX8N"
+      };
+
+      try {
+        if (!firebaseConfig || !firebaseConfig.apiKey) {
+            alert("Firebase configuration is missing. Please contact the bot admin.");
+            return;
+        }
+        app = initializeApp(firebaseConfig, "user-panel" + Date.now());
+        database = getDatabase(app);
+      } catch (error) {
+        console.error("Firebase initialization error:", error);
+      }
+    }
+
+    function setupRealTimeListeners() {
+      if (!database) return;
+      
+      onValue(ref(database, 'settings'), (snapshot) => {
+        if (snapshot.exists()) {
+          appSettings = snapshot.val();
+          document.title = appSettings.botName || 'Easy Earning Bot';
+          const header = document.getElementById('bot-name-header');
+          if(header) header.textContent = appSettings.botName || 'Easy Earning Bot';
+          updateDisplay();
+        }
+      });
+
+      onValue(ref(database, 'adTasks'), (snapshot) => {
+        if (snapshot.exists()) {
+          adTasks = Object.entries(snapshot.val()).map(([id, task]) => ({ id, ...task }));
+          renderAdTasks();
+        } else {
+          adTasks = [];
+          renderAdTasks();
+        }
+      });
+
+      onValue(ref(database, 'dailyTasks'), (snapshot) => {
+        if (snapshot.exists()) {
+          dailyTasks = Object.entries(snapshot.val()).map(([id, task]) => ({ id, ...task }));
+          renderDailyTasks();
+        } else {
+          dailyTasks = [];
+          renderDailyTasks();
+        }
+      });
+    }
+
+    async function loadAppSettings() {
+      try {
+        const snapshot = await get(ref(database, 'settings'));
+        if (snapshot.exists()) {
+          appSettings = snapshot.val();
+        } else {
+          appSettings = {
+            dailyCheckinReward: 0.001,
+            minWithdrawal: 5.00,
+            dailyVideoLimit: 10,
+            botUsername: 'Easyearing99_bot',
+            botName: 'Easy Earning Bot'
+          };
+        }
+        document.title = appSettings.botName || 'Easy Earning Bot';
+        const header = document.getElementById('bot-name-header');
+        if(header) header.textContent = appSettings.botName || 'Easy Earning Bot';
+      } catch (error) {
+        console.error('Error loading settings:', error);
+      }
+    }
+
+    async function loadUserData() {
+      if (!tgUser) return;
+      
+      try {
+        const snapshot = await get(ref(database, `users/${tgUser.id}`));
+        if (snapshot.exists()) {
+          userData = snapshot.val();
+        } else {
+          userData = {
+            id: tgUser.id,
+            username: tgUser.username || '',
+            firstName: tgUser.first_name || '',
+            lastName: tgUser.last_name || '',
+            balance: 0,
+            totalEarned: 0,
+            joinDate: new Date().toISOString(),
+            lastCheckin: null,
+            adWatchCounts: {},
+            completedTasks: {}
+          };
+          await saveUserData();
+        }
+        if (!userData.adWatchCounts) userData.adWatchCounts = {};
+      } catch (error) {
+        console.error('Error loading user data:', error);
+      }
+    }
+
+    async function saveUserData() {
+      if (!tgUser) return;
+      try {
+        await set(ref(database, `users/${tgUser.id}`), userData);
+      } catch (error) {
+        console.error('Error saving user data:', error);
+      }
+    }
+    
+    async function loadAdTasks() {
+        try {
+            const snapshot = await get(ref(database, 'adTasks'));
+            if (snapshot.exists()) {
+                adTasks = Object.entries(snapshot.val()).map(([id, task]) => ({ id, ...task }));
+            }
+            renderAdTasks();
+        } catch (error) {
+            console.error('Error loading ad tasks:', error);
+        }
+    }
+
+    async function loadDailyTasks() {
+      try {
+        const snapshot = await get(ref(database, 'dailyTasks'));
+        if (snapshot.exists()) {
+          dailyTasks = Object.entries(snapshot.val()).map(([id, task]) => ({ id, ...task }));
+        }
+        renderDailyTasks();
+      } catch (error) {
+        console.error('Error loading daily tasks:', error);
+      }
+    }
+    
+    async function loadPaymentMethods() {
+      try {
+        const snapshot = await get(ref(database, 'paymentMethods'));
+        const container = document.getElementById('payment-currency');
+        container.innerHTML = '<option value="">Select Currency</option>';
+        if (snapshot.exists()) {
+          const methods = snapshot.val();
+          for(const key in methods) {
+            const option = document.createElement('option');
+            option.value = methods[key].code;
+            option.textContent = methods[key].name;
+            container.appendChild(option);
+          }
+        }
+      } catch(error) {
+        console.error("Error loading payment methods:", error);
+      }
+    }
+
+    function loadAdScript(zoneId) {
+      return new Promise((resolve, reject) => {
+        if (document.querySelector(`script[data-zone="${zoneId}"]`)) {
+          resolve();
+          return;
+        }
+        
+        const script = document.createElement('script');
+        script.src = '//libtl.com/sdk.js';
+        script.setAttribute('data-zone', zoneId);
+        script.setAttribute('data-sdk', `show_${zoneId}`);
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    }
+
+    function loadTelegramUser() {
+      if (tgUser) {
+        document.getElementById('username').textContent = tgUser.first_name || 'Telegram User';
+        const profilePicDiv = document.getElementById('profile-pic');
+        if (tgUser.photo_url) {
+          profilePicDiv.innerHTML = `<img src="${tgUser.photo_url}" alt="P">`;
+        } else {
+          profilePicDiv.textContent = (tgUser.first_name || 'U').charAt(0);
+        }
+      }
+    }
+
+    function updateDisplay() {
+      document.getElementById('balance').textContent = `BDT ${(userData.balance || 0).toFixed(2)}`;
+      document.getElementById('total-earned').textContent = `BDT ${(userData.totalEarned || 0).toFixed(2)}`;
+      document.getElementById('referral-count').textContent = userData.referralCount || 0;
+      renderAdTasks();
+    }
+
+    function showView(viewId) {
+      document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
+      document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+      
+      document.getElementById(viewId).classList.add('active');
+      
+      const homeButton = document.querySelector('[onclick="showView(\'home-view\')"]');
+      if (viewId === 'home-view' || viewId === 'leaderboard-view' || viewId === 'tasks-view') {
+        homeButton.classList.add('active');
+      }
+
+      const viewButtonMap = {
+        'withdrawals-view': '[onclick="showView(\'withdrawals-view\')"]',
+        'history-view': '[onclick="showView(\'history-view\')"]',
+        'tasks-view': '[onclick="showView(\'tasks-view\')"]'
+      };
+
+      if (viewButtonMap[viewId]) {
+        const activeButton = document.querySelector(viewButtonMap[viewId]);
+        if (activeButton) activeButton.classList.add('active');
+      } else {
+        homeButton.classList.add('active');
+      }
+      
+      if (viewId === 'history-view') renderHistory();
+      if (viewId === 'withdrawals-view') renderWithdrawals();
+    }
+    
+    function renderAdTasks() {
+      const container = document.getElementById('ad-tasks-container');
+      if (!adTasks || adTasks.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: var(--text-muted-color);">No video ads available at the moment.</p>';
+        return;
+      }
+      container.innerHTML = adTasks.map((task) => {
+        const watchCount = userData.adWatchCounts[task.id] || 0;
+        const dailyLimit = appSettings.dailyVideoLimit || 10;
+        const isLimitReached = watchCount >= dailyLimit;
+        
+        return `
+          <div class="task-card ${isLimitReached ? 'completed' : ''}" onclick="${isLimitReached ? '' : `showAd('${task.id}')`}">
+            <div class="task-icon"><i class="fa-solid fa-rectangle-ad"></i></div>
+            <div class="task-details">
+              <h3>${task.title}</h3>
+              <p>Reward: BDT ${task.reward.toFixed(4)} | Watched: ${watchCount}/${dailyLimit} today</p>
+            </div>
+            <div class="task-arrow">
+              <i class="fa-solid ${isLimitReached ? 'fa-check-circle' : 'fa-play'}"></i>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    async function showAd(taskId) {
+        const task = adTasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        const taskCard = document.querySelector(`[onclick*="showAd('${taskId}')"]`);
+
+        const watchCount = userData.adWatchCounts[taskId] || 0;
+        const dailyLimit = appSettings.dailyVideoLimit || 10;
+        if (watchCount >= dailyLimit) {
+            alert('Daily video limit reached! Come back tomorrow for more ads.');
+            return;
+        }
+
+        if (isAdWatching) {
+            alert('Please wait for the current ad to finish!');
+            return;
+        }
+
+        try {
+            isAdWatching = true;
+            if (taskCard) taskCard.classList.add('ad-in-progress');
+            
+            document.getElementById('loading-indicator').classList.add('active');
+            await loadAdScript(task.zoneId);
+            document.getElementById('loading-indicator').classList.remove('active');
+
+            if (window[`show_${task.zoneId}`]) {
+                window[`show_${task.zoneId}`]();
+            } else {
+                window.open(`https://libtl.com/ads/${task.zoneId}`, '_blank');
+            }
+
+            setTimeout(() => {
+                showAdVerification(taskId);
+            }, (task.delay || 15) * 1000);
+
+        } catch (error) {
+            isAdWatching = false;
+            if (taskCard) taskCard.classList.remove('ad-in-progress');
+            document.getElementById('loading-indicator').classList.remove('active');
+            console.error('Error showing ad:', error);
+            alert('Error loading advertisement. Please try again.');
+        }
+    }
+
+    function showAdVerification(taskId) {
+        const taskCard = document.querySelector(`[onclick*="showAd('${taskId}')"]`);
+        if (taskCard && !taskCard.querySelector('.verify-btn')) {
+            const verifyBtn = document.createElement('button');
+            verifyBtn.className = 'verify-btn';
+            verifyBtn.textContent = 'Verify Ad Watch';
+            verifyBtn.onclick = (e) => {
+                e.stopPropagation();
+                verifyAdReward(taskId);
+            };
+            taskCard.appendChild(verifyBtn);
+        }
+    }
+
+    async function verifyAdReward(taskId) {
+        const task = adTasks.find(t => t.id === taskId);
+        if (!task) return;
+        
+        const taskCard = document.querySelector(`[onclick*="showAd('${taskId}')"]`);
+
+        try {
+            if (!userData.adWatchCounts[taskId]) {
+                userData.adWatchCounts[taskId] = 0;
+            }
+            userData.adWatchCounts[taskId]++;
+
+            const reward = task.reward;
+            userData.balance = (userData.balance || 0) + reward;
+            userData.totalEarned = (userData.totalEarned || 0) + reward;
+            
+            await saveUserData();
+            await addToHistory('earn', `Ad watched: ${task.title} - BDT ${reward.toFixed(4)}`);
+
+            updateDisplay();
+            
+            if (taskCard) {
+              const verifyBtn = taskCard.querySelector('.verify-btn');
+              if (verifyBtn) verifyBtn.remove();
+            }
+            
+            isAdWatching = false;
+            if (taskCard) taskCard.classList.remove('ad-in-progress');
+
+            if (Telegram.WebApp.HapticFeedback) {
+                Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+            }
+            alert(`Congratulations! You earned BDT ${reward.toFixed(4)} from watching ${task.title}!`);
+
+        } catch (error) {
+            isAdWatching = false;
+            if (taskCard) taskCard.classList.remove('ad-in-progress');
+            console.error('Error granting ad reward:', error);
+            alert('Error processing reward. Please try again.');
+        }
+    }
+
+    async function completeDailyTask(taskId) {
+      const task = dailyTasks.find(t => t.id === taskId);
+      if (!task) return;
+      
+      if (userData.completedTasks && userData.completedTasks[taskId]) {
+        alert('You have already completed this task today!');
+        return;
+      }
+      
+      try {
+        if (task.url.startsWith('http')) {
+          window.open(task.url, '_blank');
+        } else {
+          eval(task.url);
+        }
+        
+        setTimeout(() => {
+          showTaskVerification(taskId);
+        }, 5000);
+        
+      } catch (error) {
+        console.error('Error executing task:', error);
+        alert('Error executing task. Please try again.');
+      }
+    }
+
+    function showTaskVerification(taskId) {
+      const taskCard = document.querySelector(`[onclick*="completeDailyTask('${taskId}')"]`);
+      if (taskCard && !taskCard.querySelector('.verify-btn')) {
+        const verifyBtn = document.createElement('button');
+        verifyBtn.className = 'verify-btn';
+        verifyBtn.textContent = 'Verify Completion';
+        verifyBtn.onclick = (e) => {
+            e.stopPropagation();
+            verifyTaskCompletion(taskId);
+        };
+        taskCard.appendChild(verifyBtn);
+      }
+    }
+
+    async function verifyTaskCompletion(taskId) {
+      const task = dailyTasks.find(t => t.id === taskId);
+      if (!task) return;
+
+      try {
+        if (!userData.completedTasks) userData.completedTasks = {};
+        userData.completedTasks[taskId] = new Date().toISOString();
+        
+        const reward = task.reward;
+        userData.balance = (userData.balance || 0) + reward;
+        userData.totalEarned = (userData.totalEarned || 0) + reward;
+        
+        await saveUserData();
+        await addToHistory('earn', `Daily task: ${task.title} - BDT ${reward.toFixed(4)}`);
+        
+        updateDisplay();
+        renderDailyTasks();
+        
+        if (Telegram.WebApp.HapticFeedback) {
+          Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+        }
+        
+        alert(`Task completed successfully! You earned BDT ${reward.toFixed(4)}.`);
+      } catch (error) {
+        console.error('Error completing daily task:', error);
+        alert('Error completing task. Please try again.');
+      }
+    }
+
+    function renderDailyTasks() {
+      const container = document.getElementById('daily-tasks-container');
+      if (!dailyTasks || dailyTasks.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: var(--text-muted-color);">No daily tasks available.</p>';
+        return;
+      }
+
+      container.innerHTML = dailyTasks.map((task) => {
+        const isCompleted = userData.completedTasks && userData.completedTasks[task.id];
+        
+        return `
+          <div class="task-card ${isCompleted ? 'completed' : ''}" onclick="${isCompleted ? '' : `completeDailyTask('${task.id}')`}">
+            <div class="task-icon">
+              <i class="fa-solid ${isCompleted ? 'fa-check' : 'fa-globe'}"></i>
+            </div>
+            <div class="task-details">
+              <h3>${task.title}</h3>
+              <p>Reward: BDT ${task.reward.toFixed(4)} ${isCompleted ? '(Completed)' : ''}</p>
+            </div>
+            <div class="task-arrow">
+              <i class="fa-solid ${isCompleted ? 'fa-check-circle' : 'fa-chevron-right'}"></i>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function checkDailyCheckin() {
+        const checkinCard = document.getElementById('daily-checkin');
+        if (!userData.lastCheckin) {
+            checkinCard.style.display = 'block';
+            return;
+        }
+
+        const lastCheckinDate = new Date(userData.lastCheckin);
+        const today = new Date();
+        
+        const isSameDay = lastCheckinDate.getFullYear() === today.getFullYear() &&
+                          lastCheckinDate.getMonth() === today.getMonth() &&
+                          lastCheckinDate.getDate() === today.getDate();
+
+        if (!isSameDay) {
+            checkinCard.style.display = 'block';
+        } else {
+            checkinCard.style.display = 'none';
+        }
+    }
+
+    async function claimDailyCheckin() {
+      try {
+        const reward = appSettings.dailyCheckinReward;
+        userData.balance = (userData.balance || 0) + reward;
+        userData.totalEarned = (userData.totalEarned || 0) + reward;
+        userData.lastCheckin = new Date().toISOString();
+        
+        await saveUserData();
+        await addToHistory('earn', `Daily check-in bonus: BDT ${reward.toFixed(4)}`);
+        
+        updateDisplay();
+        document.getElementById('daily-checkin').style.display = 'none';
+        
+        if (Telegram.WebApp.HapticFeedback) {
+          Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+        }
+        
+        alert(`Daily check-in bonus claimed! You earned BDT ${reward.toFixed(4)}.`);
+      } catch (error) {
+        console.error('Error claiming daily checkin:', error);
+        alert('Error claiming daily bonus. Please try again.');
+      }
+    }
+
+    async function addToHistory(type, detail) {
+      if (!tgUser) return;
+      try {
+        await push(ref(database, `history/${tgUser.id}`), {
+          type,
+          detail,
+          timestamp: new Date().toISOString()
+        });
+      } catch (error) {
+        console.error('Error adding to history:', error);
+      }
+    }
+
+    async function renderHistory() {
+      const container = document.getElementById('history-list');
+      try {
+        const snapshot = await get(ref(database, `history/${tgUser.id}`));
+        if (!snapshot.exists()) {
+          container.innerHTML = '<p style="text-align: center; color: var(--text-muted-color);">No activity history found.</p>';
+          return;
+        }
+        const history = Object.values(snapshot.val()).reverse().slice(0, 20);
+        container.innerHTML = history.map(item => `
+          <div class="history-item">
+            <h4><i class="fa-solid ${item.type === 'earn' ? 'fa-plus-circle' : 'fa-minus-circle'}"></i> ${item.detail}</h4>
+            <p>${new Date(item.timestamp).toLocaleString()}</p>
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading history:', error);
+        container.innerHTML = '<p style="text-align: center; color: var(--text-muted-color);">Error loading history.</p>';
+      }
+    }
+
+    async function renderLeaderboard() {
+      const container = document.getElementById('leaderboard-list');
+      try {
+        const snapshot = await get(ref(database, 'users'));
+        if (!snapshot.exists()) {
+          container.innerHTML = '<p style="text-align: center; color: var(--text-muted-color);">No users found.</p>';
+          return;
+        }
+        const users = Object.values(snapshot.val())
+          .sort((a, b) => (b.totalEarned || 0) - (a.totalEarned || 0))
+          .slice(0, 10);
+        
+        container.innerHTML = users.map((user, index) => `
+          <div class="leaderboard-item">
+            <div class="leaderboard-rank">${index + 1}</div>
+            <div class="leaderboard-info">
+              <h4>${user.firstName || 'Anonymous'}</h4>
+              <p>@${user.username || 'N/A'}</p>
+            </div>
+            <div class="leaderboard-earnings">BDT ${(user.totalEarned || 0).toFixed(2)}</div>
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading leaderboard:', error);
+        container.innerHTML = '<p style="text-align: center; color: var(--text-muted-color);">Error loading leaderboard.</p>';
+      }
+    }
+
+    async function renderWithdrawals() {
+      const container = document.getElementById('withdrawal-list');
+      try {
+        const snapshot = await get(ref(database, 'withdrawals'));
+        if (!snapshot.exists()) {
+          container.innerHTML = '<p style="text-align: center; color: var(--text-muted-color);">No withdrawal requests found.</p>';
+          return;
+        }
+        const withdrawals = Object.values(snapshot.val()).filter(w => w.userId === tgUser.id).reverse();
+        if (withdrawals.length === 0) {
+          container.innerHTML = '<p style="text-align: center; color: var(--text-muted-color);">No withdrawal requests found.</p>';
+          return;
+        }
+        container.innerHTML = withdrawals.map(withdrawal => `
+          <div class="history-item">
+            <h4><i class="fa-solid fa-money-bill-transfer"></i> BDT ${withdrawal.amount.toFixed(2)} (${withdrawal.currency})</h4>
+            <p>Status: <span style="color: ${withdrawal.status === 'approved' ? 'var(--primary-color)' : withdrawal.status === 'rejected' ? '#ff4444' : 'var(--accent-color)'};">${withdrawal.status.toUpperCase()}</span></p>
+            <p>${new Date(withdrawal.timestamp).toLocaleString()}</p>
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading withdrawals:', error);
+        container.innerHTML = '<p style="text-align: center; color: var(--text-muted-color);">Error loading withdrawals.</p>';
+      }
+    }
+
+    function openWithdrawModal() {
+      if (userData.balance < appSettings.minWithdrawal) {
+        if (Telegram.WebApp.HapticFeedback) {
+          Telegram.WebApp.HapticFeedback.notificationOccurred('error');
+        }
+        alert(`Minimum withdrawal amount is BDT ${appSettings.minWithdrawal.toFixed(2)}. Keep earning to reach the minimum!`);
+        return;
+      }
+      document.getElementById('withdraw-modal').classList.add('active');
+    }
+
+    function closeWithdrawModal() {
+      document.getElementById('withdraw-modal').classList.remove('active');
+    }
+
+    async function requestWithdraw() {
+      const currency = document.getElementById('payment-currency').value;
+      const amount = parseFloat(document.getElementById('withdraw-amount').value);
+      const walletAddress = document.getElementById('wallet-address').value;
+      
+      if (!currency) {
+        alert('Please select a payment method!');
+        return;
+      }
+      
+      if (!amount || isNaN(amount) || amount <= 0) {
+        alert('Please enter a valid withdrawal amount!');
+        return;
+      }
+      
+      if (!walletAddress || walletAddress.trim().length < 5) {
+        alert('Please enter a valid wallet address or account details!');
+        return;
+      }
+      
+      if (amount > userData.balance) {
+        alert(`Insufficient balance! Your current balance is BDT ${userData.balance.toFixed(2)}`);
+        return;
+      }
+      
+      if (amount < appSettings.minWithdrawal) {
+        alert(`Minimum withdrawal amount is BDT ${appSettings.minWithdrawal.toFixed(2)}. Please enter a higher amount.`);
+        return;
+      }
+      
+      if (!confirm(`Confirm withdrawal of BDT ${amount.toFixed(2)} via ${currency}?`)) {
+        return;
+      }
+      
+      try {
+        const originalBalance = userData.balance;
+        userData.balance -= amount;
+        await saveUserData();
+        
+        const withdrawalData = {
+          userId: tgUser.id,
+          username: userData.username || 'N/A',
+          firstName: userData.firstName || 'N/A',
+          lastName: userData.lastName || '',
+          currency: currency,
+          amount: amount,
+          walletAddress: walletAddress.trim(),
+          status: 'pending',
+          timestamp: new Date().toISOString(),
+          userBalance: originalBalance,
+          remainingBalance: userData.balance
+        };
+        
+        await push(ref(database, 'withdrawals'), withdrawalData);
+        
+        await addToHistory('withdraw', `Withdrawal request: BDT ${amount.toFixed(2)} (${currency}) - Pending`);
+        
+        document.getElementById('payment-currency').value = '';
+        document.getElementById('withdraw-amount').value = '';
+        document.getElementById('wallet-address').value = '';
+        
+        closeWithdrawModal();
+        updateDisplay();
+        
+        if (Telegram.WebApp.HapticFeedback) {
+          Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+        }
+        
+        alert('✅ Withdrawal request submitted successfully!\n\n📋 Request Details:\n💰 Amount: BDT ' + amount.toFixed(2) + '\n💳 Method: ' + currency + '\n⏰ Processing Time: 24-48 hours\n\n✨ Thank you for using Easy Earning Bot!');
+        
+      } catch (error) {
+        console.error('Error submitting withdrawal:', error);
+        userData.balance += amount; 
+        await saveUserData();
+        alert('❌ Failed to submit withdrawal request. Please check your internet connection and try again.');
+      }
+    }
+
+    function shareApp() {
+      if (!tgUser) {
+        alert("Could not get user data from Telegram.");
+        return;
+      }
+      const shareText = `🚀 Join me on Easy Earning Bot and start earning money today!\n\n💰 Earn by watching video advertisements\n🎯 Complete daily tasks for rewards\n💸 Withdraw your earnings easily\n🏆 Compete on the leaderboard\n\nStart earning now: https://t.me/${appSettings.botUsername}?start=${tgUser.id}`;
+      if (Telegram.WebApp.openTelegramLink) {
+        Telegram.WebApp.openTelegramLink(`https://t.me/share/url?url=https://t.me/${appSettings.botUsername}?start=${tgUser.id}&text=${encodeURIComponent(shareText)}`);
+      } else {
+        navigator.clipboard.writeText(shareText).then(() => {
+          alert('Referral message copied to clipboard!');
+        }).catch(() => {
+          alert(`Share this message:\n\n${shareText}`);
+        });
+      }
+    }
+
+    window.showView = showView;
+    window.showAd = showAd;
+    window.verifyAdReward = verifyAdReward;
+    window.completeDailyTask = completeDailyTask;
+    window.verifyTaskCompletion = verifyTaskCompletion;
+    window.claimDailyCheckin = claimDailyCheckin;
+    window.openWithdrawModal = openWithdrawModal;
+    window.closeWithdrawModal = closeWithdrawModal;
+    window.requestWithdraw = requestWithdraw;
+    window.shareApp = shareApp;
+  </script>
+</head>
+<body>
+  <div id="loading-indicator" class="loading-indicator">
+    <div class="spinner"></div>
+    <p style="text-align: center; margin: 0;">Loading advertisement...</p>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <h1 id="bot-name-header" style="font-size: 1.5em; margin-bottom: 15px; text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">Easy Earning Bot</h1>
+      <div class="profile-section">
+        <div class="profile-pic" id="profile-pic">U</div>
+        <div class="user-info">
+          <h2 id="username">Loading...</h2>
+          <p>Welcome back!</p>
+        </div>
+      </div>
+      <div class="balance-section">
+        <div class="balance" id="balance">BDT 0.00</div>
+        <div class="balance-label">Available Balance</div>
+      </div>
+    </header>
+
+    <main>
+      <div id="home-view" class="view active">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h4><i class="fa-solid fa-coins"></i> Total Earned</h4>
+            <div class="stat-value" id="total-earned">BDT 0.00</div>
+          </div>
+          <div class="stat-card">
+            <h4><i class="fa-solid fa-users"></i> Referrals</h4>
+            <div class="stat-value" id="referral-count">0</div>
+          </div>
+        </div>
+
+        <div class="daily-checkin-card" id="daily-checkin" onclick="claimDailyCheckin()" style="display: none;">
+          <h3>Daily Check-in</h3>
+          <p>Claim your daily bonus</p>
+        </div>
+
+        <h2 class="section-title">Quick Actions</h2>
+        <div class="task-card" onclick="showView('tasks-view')">
+          <div class="task-icon"><i class="fa-solid fa-list-check"></i></div>
+          <div class="task-details"><h3>View Tasks</h3><p>Watch video ads and complete daily tasks to earn money.</p></div>
+          <div class="task-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+        </div>
+        <div class="task-card" onclick="openWithdrawModal()">
+          <div class="task-icon"><i class="fa-solid fa-wallet"></i></div>
+          <div class="task-details"><h3>Withdraw Funds</h3><p>Request withdrawal of your available balance.</p></div>
+          <div class="task-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+        </div>
+        <div class="task-card" onclick="showView('leaderboard-view')">
+          <div class="task-icon"><i class="fa-solid fa-trophy"></i></div>
+          <div class="task-details"><h3>Leaderboard</h3><p>See the top earning users and compete for rankings.</p></div>
+          <div class="task-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+        </div>
+      </div>
+
+      <div id="tasks-view" class="view">
+        <h2 class="section-title">Video Advertisement Tasks</h2>
+        <div id="ad-tasks-container"></div>
+        <h2 class="section-title">Daily Bonus Tasks</h2>
+        <div id="daily-tasks-container"></div>
+      </div>
+
+      <div id="leaderboard-view" class="view">
+        <h2 class="section-title">Top Earners</h2>
+        <div id="leaderboard-list"></div>
+      </div>
+
+      <div id="withdrawals-view" class="view">
+        <h2 class="section-title">My Withdrawal History</h2>
+        <div id="withdrawal-list"></div>
+      </div>
+
+      <div id="history-view" class="view">
+        <h2 class="section-title">Earning History</h2>
+        <div id="history-list"></div>
+      </div>
+    </main>
+
+    <nav class="footer-nav">
+      <button class="nav-button active" onclick="showView('home-view')"><i class="icon fa-solid fa-house"></i>Home</button>
+      <button class="nav-button" onclick="showView('tasks-view')"><i class="icon fa-solid fa-list-check"></i>Tasks</button>
+      <button class="nav-button" onclick="showView('withdrawals-view')"><i class="icon fa-solid fa-money-bill-transfer"></i>Withdraw</button>
+      <button class="nav-button" onclick="showView('history-view')"><i class="icon fa-solid fa-clock-rotate-left"></i>History</button>
+      <button class="nav-button" onclick="shareApp()"><i class="icon fa-solid fa-share-nodes"></i>Share</button>
+    </nav>
+  </div>
+  
+  <div class="modal-overlay" id="withdraw-modal">
+    <div class="modal-content">
+      <h3>Request Withdrawal</h3>
+      <div class="form-group">
+        <label for="payment-currency">Payment Method</label>
+        <select id="payment-currency">
+          <option value="">Select Payment Method...</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="withdraw-amount">Withdrawal Amount (BDT)</label>
+        <input type="number" id="withdraw-amount" step="0.01" placeholder="Enter amount to withdraw">
+      </div>
+      <div class="form-group">
+        <label for="wallet-address">Wallet Address / Account Details</label>
+        <input type="text" id="wallet-address" placeholder="Enter your wallet address or account details">
+      </div>
+      <button class="btn btn-primary" onclick="requestWithdraw()">Submit Withdrawal Request</button>
+      <button class="btn btn-secondary" onclick="closeWithdrawModal()">Cancel</button>
+    </div>
+  </div>
+</body>
+</html>
